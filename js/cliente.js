@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Validar sesión
+  // 1. Validar sesión de usuario
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) {
     window.location.href = 'index.html';
@@ -8,36 +8,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const userId = session.user.id;
 
-  // 2. Nombre de usuario
-  const { data: profile } = await supabaseClient
+  // 2. Obtener datos del perfil
+  const { data: profile, error: profileErr } = await supabaseClient
     .from('profiles')
     .select('nombre_completo')
     .eq('id', userId)
     .single();
 
-  if (profile) {
-    document.getElementById('userName').innerText = profile.nombre_completo;
+  if (profileErr) {
+    console.error('Error al consultar perfil:', profileErr);
   }
 
-  // 3. Cargar vehículos e historial
+  if (profile && profile.nombre_completo) {
+    const userElem = document.getElementById('userName');
+    if (userElem) userElem.innerText = profile.nombre_completo;
+  }
+
+  // 3. Cargar vehículos y el historial
   await cargarVehiculosYServicios(userId);
 
-  // Cerrar sesión
-  document.getElementById('btnLogout').addEventListener('click', async () => {
-    await supabaseClient.auth.signOut();
-    window.location.href = 'index.html';
-  });
+  // 4. Asignación de evento para cerrar sesión
+  const btnLogout = document.getElementById('btnLogout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    });
+  }
 });
 
 async function cargarVehiculosYServicios(userId) {
   const container = document.getElementById('vehiculosContainer');
+  if (!container) return;
+
   try {
+    // Consulta de vehículos del usuario
     const { data: vehiculos, error: errVeh } = await supabaseClient
       .from('vehiculos')
       .select('*')
       .eq('id_propietario', userId);
 
-    if (errVeh) throw errVeh;
+    if (errVeh) {
+      console.error('Detalle error Supabase (vehiculos):', errVeh);
+      throw errVeh;
+    }
 
     if (!vehiculos || vehiculos.length === 0) {
       container.innerHTML = '<p style="color: #64748b;">No tienes vehículos registrados en el taller.</p>';
@@ -46,6 +60,7 @@ async function cargarVehiculosYServicios(userId) {
 
     container.innerHTML = '';
 
+    // Iteración de vehículos para construir la interfaz
     for (const car of vehiculos) {
       const { data: servicios, error: errServ } = await supabaseClient
         .from('servicios')
@@ -53,28 +68,32 @@ async function cargarVehiculosYServicios(userId) {
         .eq('vehiculo_id', car.id)
         .order('created_at', { ascending: false });
 
-      if (errServ) console.error('Error servicios:', errServ);
+      if (errServ) {
+        console.error(`Error al cargar servicios del vehículo ${car.id}:`, errServ);
+      }
 
       let serviciosHtml = '';
 
       if (servicios && servicios.length > 0) {
         servicios.forEach(serv => {
           const fecha = new Date(serv.created_at).toLocaleDateString('es-GT', {
-            year: 'numeric', month: 'short', day: 'numeric'
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
           });
 
           serviciosHtml += `
             <div class="service-box">
               <div class="service-title">
-                <span>${serv.tipo_servicio}</span>
+                <span>${serv.tipo_servicio || 'Mantenimiento General'}</span>
                 <span style="color: #64748b; font-weight: normal; font-size: 0.85rem;">${fecha}</span>
               </div>
               <div style="font-size: 0.88rem; margin-bottom: 5px;">
-                <strong>Kilometraje Registrado:</strong> ${serv.km_actual} KM
+                <strong>Kilometraje Registrado:</strong> ${serv.km_actual || 'N/A'} KM
               </div>
               <div class="details-text">
                 <strong>Trabajos Realizados / Diagnóstico:</strong><br>
-                ${serv.detalles_trabajo || 'Mantenimiento técnico general.'}
+                ${serv.detalles_trabajo || 'Sin observaciones adicionales.'}
               </div>
               ${serv.cambio_aceite_motor ? `
                 <div class="oil-card oil-motor">
@@ -116,7 +135,7 @@ async function cargarVehiculosYServicios(userId) {
       container.innerHTML += cardHtml;
     }
   } catch (err) {
-    console.error('Error al cargar la información:', err);
-    container.innerHTML = '<p style="color:#ef4444;">Error de comunicación con el servidor.</p>';
+    console.error('Error capturado en la ejecución:', err);
+    container.innerHTML = '<p style="color:#ef4444;">Error de comunicación con el servidor. Verifica las políticas RLS en Supabase.</p>';
   }
 }
