@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Panel | Taller Sut Gz</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f8fafc; margin: 0; padding: 0; }
+    header { background: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 1.2rem; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+    .welcome-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 25px; }
+    .vehiculos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .car-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .car-header { border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 15px; }
+    .car-header h3 { margin: 0; color: #0f172a; }
+    .car-header span { font-size: 0.85rem; color: #64748b; font-weight: bold; }
+    .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
+    .info-label { color: #64748b; }
+    .info-value { color: #1e293b; font-weight: 600; }
+    .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; display: inline-block; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TALLER DE MECÁNICA AUTOMOTRIZ SUT GZ</h1>
+    <button id="btnLogout" class="btn-logout">Cerrar Sesión</button>
+  </header>
+
+  <div class="container">
+    <div class="welcome-card">
+      <h2>Bienvenido, <span id="userName">Cargando...</span></h2>
+      <p style="color: #64748b; margin: 0;">Consulta el estado de tu vehículo y el historial de mantenimiento en tiempo real.</p>
+    </div>
+
+    <h3 style="color: #334155;">Mis Vehículos Registrados</h3>
+    <div id="vehiculosContainer" class="vehiculos-grid">
+      <p>Cargando información del vehículo...</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/cliente.js"></script>
+</body>
+</html>
