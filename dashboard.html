@@ -9,18 +9,25 @@
     body { background-color: #f8fafc; margin: 0; padding: 0; }
     header { background: #0f172a; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
     header h1 { margin: 0; font-size: 1.2rem; }
-    .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+    .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
     .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
     .welcome-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 25px; }
-    .vehiculos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .car-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .vehiculos-grid { display: flex; flex-direction: column; gap: 20px; }
+    .car-card { background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 5px solid #0284c7; }
     .car-header { border-bottom: 2px solid #0284c7; padding-bottom: 10px; margin-bottom: 15px; }
     .car-header h3 { margin: 0; color: #0f172a; }
     .car-header span { font-size: 0.85rem; color: #64748b; font-weight: bold; }
-    .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
-    .info-label { color: #64748b; }
-    .info-value { color: #1e293b; font-weight: 600; }
-    .badge { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; display: inline-block; margin-top: 5px; }
+    
+    /* Fichas técnicas e historial */
+    .service-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 15px; margin-top: 15px; }
+    .service-title { font-weight: bold; color: #0284c7; font-size: 0.95rem; display: flex; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 10px; }
+    .details-text { background: #ffffff; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 5px; font-size: 0.88rem; margin: 8px 0; color: #334155; }
+    
+    /* Bloques de Aceite */
+    .oil-card { padding: 8px 12px; border-radius: 5px; font-size: 0.85rem; margin-top: 8px; line-height: 1.4; }
+    .oil-motor { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .oil-caja { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .next-date { font-size: 0.85rem; color: #d97706; font-weight: bold; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -36,7 +43,7 @@
       <p style="color: #64748b; margin: 0;">Consulta el estado de tu vehículo y el historial de mantenimiento en tiempo real.</p>
     </div>
 
-    <h3 style="color: #334155;">Mis Vehículos Registrados</h3>
+    <h3 style="color: #334155; margin-bottom: 15px;">Mis Vehículos Registrados</h3>
     <div id="vehiculosContainer" class="vehiculos-grid">
       <p>Cargando información del vehículo...</p>
     </div>

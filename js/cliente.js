@@ -1,7 +1,5 @@
-// js/cliente.js
-
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Verificar si hay sesión activa usando supabaseClient
+  // 1. Validar sesión
   const { data: { session } } = await supabaseClient.auth.getSession();
   
   if (!session) {
@@ -11,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const userId = session.user.id;
 
-  // 2. Obtener datos del perfil del cliente
+  // 2. Obtener nombre del perfil
   const { data: profile } = await supabaseClient
     .from('profiles')
     .select('nombre_completo')
@@ -22,78 +20,113 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('userName').innerText = profile.nombre_completo;
   }
 
-  // 3. Cargar los vehículos del cliente con sus últimos servicios
-  cargarVehiculosCliente(userId);
+  // 3. Cargar vehículos y su historial técnico
+  cargarVehiculosYServicios(userId);
 
-  // Botón para cerrar sesión
+  // Cierre de sesión
   document.getElementById('btnLogout').addEventListener('click', async () => {
     await supabaseClient.auth.signOut();
     window.location.href = 'index.html';
   });
 });
 
-async function cargarVehiculosCliente(userId) {
+async function cargarVehiculosYServicios(userId) {
   const container = document.getElementById('vehiculosContainer');
 
-  // Consulta de vehículos pertenecientes al usuario
-  const { data: vehiculos, error } = await supabaseClient
-    .from('vehiculos')
-    .select('*')
-    .eq('id_propietario', userId);
-
-  if (error || !vehiculos || vehiculos.length === 0) {
-    container.innerHTML = '<p style="grid-column: 1/-1;">No tienes vehículos registrados en el taller.</p>';
-    return;
-  }
-
-  container.innerHTML = '';
-
-  // Recorrer los vehículos y buscar su último servicio
-  for (const car of vehiculos) {
-    const { data: servicios } = await supabaseClient
-      .from('servicios')
+  try {
+    // Consulta los vehículos pertenecientes al cliente
+    const { data: vehiculos, error: errVeh } = await supabaseClient
+      .from('vehiculos')
       .select('*')
-      .eq('id_vehiculo', car.id)
-      .order('fecha_servicio', { ascending: false })
-      .limit(1);
+      .eq('propietario_id', userId);
 
-    const ultimoServicio = servicios && servicios.length > 0 ? servicios[0] : null;
+    if (errVeh) throw errVeh;
 
-    const carCardHtml = `
-      <div class="car-card">
-        <div class="car-header">
-          <h3>${car.marca} ${car.linea || ''} (${car.modelo})</h3>
-          <span>Placa: ${car.placa} | Color: ${car.color}</span>
+    if (!vehiculos || vehiculos.length === 0) {
+      container.innerHTML = '<p style="color: #64748b;">No tienes vehículos registrados en el taller.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+
+    for (const car of vehiculos) {
+      // Obtener TODOS los servicios asociados al vehículo
+      const { data: servicios, error: errServ } = await supabaseClient
+        .from('servicios')
+        .select('*')
+        .eq('vehiculo_id', car.id)
+        .order('created_at', { ascending: false });
+
+      if (errServ) console.error('Error servicios:', errServ);
+
+      let serviciosHtml = '';
+
+      if (servicios && servicios.length > 0) {
+        servicios.forEach(serv => {
+          const fecha = new Date(serv.created_at).toLocaleDateString('es-GT', {
+            year: 'numeric', month: 'short', day: 'numeric'
+          });
+
+          serviciosHtml += `
+            <div class="service-box">
+              <div class="service-title">
+                <span>🛠️ ${serv.tipo_servicio}</span>
+                <span style="color: #64748b; font-weight: normal; font-size: 0.85rem;">📅 ${fecha}</span>
+              </div>
+
+              <div style="font-size: 0.88rem; margin-bottom: 5px;">
+                <strong>Kilometraje Registrado:</strong> ${serv.km_actual} KM
+              </div>
+
+              <div class="details-text">
+                <strong>Trabajos Realizados / Diagnóstico:</strong><br>
+                ${serv.detalles_trabajo || 'Mantenimiento técnico general.'}
+              </div>
+
+              ${serv.cambio_aceite_motor ? `
+                <div class="oil-card oil-motor">
+                  🛢️ <strong>Cambio de Aceite de Motor Realizado</strong><br>
+                  • Especificación/Aceite: ${serv.tipo_aceite_motor || 'N/A'}<br>
+                  • Próximo cambio en: <strong>${serv.proximo_km_motor || 'N/A'} KM</strong>
+                </div>
+              ` : ''}
+
+              ${serv.cambio_aceite_caja ? `
+                <div class="oil-card oil-caja">
+                  ⚙️ <strong>Cambio de Aceite de Caja / Transmisión Realizado</strong><br>
+                  • Especificación: ${serv.tipo_aceite_caja || 'N/A'}<br>
+                  • Próximo cambio en: <strong>${serv.proximo_km_caja || 'N/A'} KM</strong>
+                </div>
+              ` : ''}
+
+              ${serv.proxima_fecha ? `
+                <div class="next-date">
+                  🗓️ Próxima visita recomendada: ${serv.proxima_fecha}
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+      } else {
+        serviciosHtml = '<p style="font-size: 0.85rem; color: #94a3b8; font-style: italic; margin-top: 10px;">Sin mantenimientos registrados aún.</p>';
+      }
+
+      const cardHtml = `
+        <div class="car-card">
+          <div class="car-header">
+            <h3>🚘 ${car.marca} ${car.linea || ''} (${car.modelo})</h3>
+            <span>Placa: ${car.placa} | Color: ${car.color}</span>
+          </div>
+          <h4 style="margin: 0; color: #475569; font-size: 0.9rem;">Historial Clínico de Fichas Técnicas:</h4>
+          ${serviciosHtml}
         </div>
-        
-        ${ultimoServicio ? `
-          <div class="info-row">
-            <span class="info-label">Tipo de Aceite Usado:</span>
-            <span class="info-value">${ultimoServicio.tipo_aceite}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Último Servicio:</span>
-            <span class="info-value">${ultimoServicio.fecha_servicio}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Km del Últo. Servicio:</span>
-            <span class="info-value">${ultimoServicio.kilometraje_actual} km</span>
-          </div>
-          <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 10px 0;">
-          <div class="info-row">
-            <span class="info-label">Próximo Servicio (Km):</span>
-            <span class="info-value" style="color: #0284c7;">${ultimoServicio.kilometraje_proximo_servicio} km</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Fecha Est. Próximo:</span>
-            <span class="info-value" style="color: #0284c7;">${ultimoServicio.fecha_proximo_servicio || 'No programada'}</span>
-          </div>
-        ` : `
-          <p class="badge">Sin mantenimientos registrados aún</p>
-        `}
-      </div>
-    `;
+      `;
 
-    container.innerHTML += carCardHtml;
+      container.innerHTML += cardHtml;
+    }
+
+  } catch (err) {
+    console.error('Error al cargar la información:', err);
+    container.innerHTML = '<p style="color:#ef4444;">Error de comunicación con el servidor.</p>';
   }
 }
