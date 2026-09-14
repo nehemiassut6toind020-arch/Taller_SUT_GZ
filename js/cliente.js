@@ -24,10 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (userElem) userElem.innerText = profile.nombre_completo;
   }
 
-  // 3. Cargar vehículos y el historial
+  // 3. Cargar vehículos e historial
   await cargarVehiculosYServicios(userId);
 
-  // 4. Asignación de evento para cerrar sesión
+  // 4. Evento para cerrar sesión
   const btnLogout = document.getElementById('btnLogout');
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
@@ -42,16 +42,27 @@ async function cargarVehiculosYServicios(userId) {
   if (!container) return;
 
   try {
-    // Consulta de vehículos del usuario
-    const { data: vehiculos, error: errVeh } = await supabaseClient
+    // Intento 1: Traer vehículos y sus servicios anidados usando 'id_propietario'
+    let res = await supabaseClient
       .from('vehiculos')
-      .select('*')
+      .select('*, servicios(*)')
       .eq('id_propietario', userId);
 
-    if (errVeh) {
-      console.error('Detalle error Supabase (vehiculos):', errVeh);
-      throw errVeh;
+    // Intento 2: Si falla con 400 por nombre de columna, probar 'propietario_id'
+    if (res.error) {
+      console.warn('Falló id_propietario, reintentando con propietario_id...', res.error);
+      res = await supabaseClient
+        .from('vehiculos')
+        .select('*, servicios(*)')
+        .eq('propietario_id', userId);
     }
+
+    if (res.error) {
+      console.error('Error definitivo de Supabase:', res.error);
+      throw res.error;
+    }
+
+    const vehiculos = res.data;
 
     if (!vehiculos || vehiculos.length === 0) {
       container.innerHTML = '<p style="color: #64748b;">No tienes vehículos registrados en el taller.</p>';
@@ -60,21 +71,13 @@ async function cargarVehiculosYServicios(userId) {
 
     container.innerHTML = '';
 
-    // Iteración de vehículos para construir la interfaz
-    for (const car of vehiculos) {
-      const { data: servicios, error: errServ } = await supabaseClient
-        .from('servicios')
-        .select('*')
-        .eq('vehiculo_id', car.id)
-        .order('created_at', { ascending: false });
-
-      if (errServ) {
-        console.error(`Error al cargar servicios del vehículo ${car.id}:`, errServ);
-      }
-
+    // Renderizado estructurado
+    vehiculos.forEach(car => {
+      // Ordenar servicios del más reciente al más antiguo
+      const servicios = (car.servicios || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       let serviciosHtml = '';
 
-      if (servicios && servicios.length > 0) {
+      if (servicios.length > 0) {
         servicios.forEach(serv => {
           const fecha = new Date(serv.created_at).toLocaleDateString('es-GT', {
             year: 'numeric',
@@ -121,7 +124,7 @@ async function cargarVehiculosYServicios(userId) {
         serviciosHtml = '<p style="font-size: 0.85rem; color: #94a3b8; font-style: italic; margin-top: 10px;">Sin mantenimientos registrados aún.</p>';
       }
 
-      const cardHtml = `
+      container.innerHTML += `
         <div class="car-card">
           <div class="car-header">
             <h3>${car.marca} ${car.linea || ''} (${car.modelo})</h3>
@@ -131,11 +134,9 @@ async function cargarVehiculosYServicios(userId) {
           ${serviciosHtml}
         </div>
       `;
-
-      container.innerHTML += cardHtml;
-    }
+    });
   } catch (err) {
     console.error('Error capturado en la ejecución:', err);
-    container.innerHTML = '<p style="color:#ef4444;">Error de comunicación con el servidor. Verifica las políticas RLS en Supabase.</p>';
+    container.innerHTML = '<p style="color:#ef4444;">Error de comunicación con el servidor. Revisa la consola para más detalles.</p>';
   }
 }
