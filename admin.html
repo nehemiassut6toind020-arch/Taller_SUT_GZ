@@ -2,32 +2,240 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Panel de Administración | Taller SUT GZ</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 3rem; }
-    header { background-color: #0f172a; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 1.25rem; }
-    .btn-logout { background-color: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; }
-    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
-    .card h2 { margin-bottom: 1rem; font-size: 1.1rem; color: #0284c7; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-    .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
-    .form-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
-    .form-group input, .form-group select, .form-group textarea { padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; }
-    .btn-primary { background-color: #0284c7; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 1rem; }
-    .btn-danger { background-color: #ef4444; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-    .btn-warning { background-color: #f59e0b; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-    .btn-success { background-color: #10b981; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
-    th { background-color: #f8fafc; font-weight: 600; }
-    .actions { display: flex; gap: 0.3rem; }
-    .checkbox-container { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; cursor: pointer; font-weight: bold; color: #0284c7; font-size: 0.9rem; }
-    .checkbox-container input { width: 1.1rem; height: 1.1rem; cursor: pointer; }
-    .sub-card { background: #f0f9ff; border: 1px solid #bae6fd; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; display: none; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif; 
+    }
+
+    body { 
+      background-color: #f1f5f9; 
+      color: #1e293b; 
+      padding-bottom: 3rem; 
+      line-height: 1.5;
+    }
+
+    header { 
+      background-color: #0f172a; 
+      color: white; 
+      padding: 1rem; 
+      display: flex; 
+      flex-wrap: wrap;
+      justify-content: space-between; 
+      align-items: center; 
+      gap: 0.75rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    header h1 { 
+      font-size: 1.1rem; 
+      font-weight: 700;
+    }
+
+    .btn-logout { 
+      background-color: #ef4444; 
+      color: white; 
+      border: none; 
+      padding: 0.5rem 1rem; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    .btn-logout:active {
+      background-color: #dc2626;
+    }
+
+    main { 
+      width: 100%;
+      max-width: 1100px; 
+      margin: 1rem auto; 
+      padding: 0 0.75rem; 
+    }
+
+    .card { 
+      background: white; 
+      padding: 1.25rem; 
+      border-radius: 10px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+      margin-bottom: 1.25rem; 
+    }
+
+    .card h2 { 
+      margin-bottom: 1rem; 
+      font-size: 1.1rem; 
+      color: #0284c7; 
+      border-bottom: 2px solid #e0f2fe;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Grid adaptativo para Formularios */
+    .form-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+      gap: 1rem; 
+    }
+
+    .form-group { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.35rem; 
+    }
+
+    .form-group label { 
+      font-size: 0.85rem; 
+      font-weight: 600; 
+      color: #475569; 
+    }
+
+    .form-group input, 
+    .form-group select, 
+    .form-group textarea { 
+      padding: 0.65rem; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 6px; 
+      font-size: 0.95rem; 
+      width: 100%;
+      background-color: #fff;
+    }
+
+    .form-group input:focus, 
+    .form-group select:focus, 
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+
+    /* Botones principales y acciones */
+    .btn-primary { 
+      background-color: #0284c7; 
+      color: white; 
+      border: none; 
+      padding: 0.75rem 1.25rem; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: 700; 
+      font-size: 0.95rem;
+      margin-top: 1rem; 
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:active {
+      background-color: #0369a1;
+    }
+
+    .btn-danger { 
+      background-color: #ef4444; 
+      color: white; 
+      border: none; 
+      padding: 0.4rem 0.75rem; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 0.8rem; 
+      font-weight: 600;
+    }
+
+    .btn-warning { 
+      background-color: #f59e0b; 
+      color: white; 
+      border: none; 
+      padding: 0.4rem 0.75rem; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 0.8rem; 
+      font-weight: 600;
+    }
+
+    .btn-success { 
+      background-color: #10b981; 
+      color: white; 
+      border: none; 
+      padding: 0.4rem 0.75rem; 
+      border-radius: 4px; 
+      cursor: pointer; 
+      font-size: 0.8rem; 
+      font-weight: 600;
+    }
+
+    /* Tablas Responsivas */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      min-width: 600px; /* Asegura un ancho legible sin aplastar columnas */
+    }
+
+    th, td { 
+      padding: 0.75rem; 
+      text-align: left; 
+      border-bottom: 1px solid #e2e8f0; 
+      font-size: 0.85rem; 
+    }
+
+    th { 
+      background-color: #f8fafc; 
+      font-weight: 700; 
+      color: #334155;
+    }
+
+    .actions { 
+      display: flex; 
+      gap: 0.4rem; 
+      flex-wrap: wrap;
+    }
+
+    /* Checkbox y secciones dinámicas */
+    .checkbox-container { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.6rem; 
+      margin: 1rem 0 0.5rem 0; 
+      cursor: pointer; 
+      font-weight: 600; 
+      color: #0284c7; 
+      font-size: 0.9rem; 
+    }
+
+    .checkbox-container input { 
+      width: 1.25rem; 
+      height: 1.25rem; 
+      cursor: pointer; 
+      accent-color: #0284c7;
+    }
+
+    .sub-card { 
+      background: #f0f9ff; 
+      border: 1px solid #bae6fd; 
+      padding: 1rem; 
+      border-radius: 8px; 
+      margin-bottom: 1rem; 
+      display: none; 
+    }
+
+    /* Media Queries específicas para smartphones */
+    @media (min-width: 640px) {
+      header h1 { font-size: 1.3rem; }
+      header { padding: 1rem 2rem; }
+      main { padding: 0 1rem; margin: 2rem auto; }
+      .btn-primary { width: auto; }
+      .card { padding: 1.5rem; }
+    }
   </style>
 </head>
 <body>
@@ -66,27 +274,29 @@
           </div>
         </div>
         <button type="submit" class="btn-primary" id="btnGuardarCliente">Crear Cuenta de Cliente</button>
-        <button type="button" class="btn-danger" id="btnCancelarEditCliente" style="display:none;">Cancelar Edición</button>
+        <button type="button" class="btn-danger" id="btnCancelarEditCliente" style="display:none; margin-top: 0.5rem;">Cancelar Edición</button>
       </form>
     </section>
 
     <!-- Módulo 2: Clientes Registrados -->
     <section class="card">
       <h2>Clientes Registrados</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre Completo</th>
-            <th>Teléfono</th>
-            <th>DPI</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tablaClientes">
-          <tr><td colspan="5">Cargando lista...</td></tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre Completo</th>
+              <th>Teléfono</th>
+              <th>DPI</th>
+              <th>Rol</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaClientes">
+            <tr><td colspan="5">Cargando lista...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Módulo 3: Registrar / Editar Vehículo -->
@@ -123,27 +333,29 @@
           </div>
         </div>
         <button type="submit" class="btn-primary" id="btnGuardarVehiculo">Guardar Vehículo</button>
-        <button type="button" class="btn-danger" id="btnCancelarEditVehiculo" style="display:none;">Cancelar Edición</button>
+        <button type="button" class="btn-danger" id="btnCancelarEditVehiculo" style="display:none; margin-top: 0.5rem;">Cancelar Edición</button>
       </form>
     </section>
 
     <!-- Módulo 4: Lista de Vehículos -->
     <section class="card">
       <h2>Vehículos Registrados</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Propietario</th>
-            <th>Vehículo</th>
-            <th>Placa</th>
-            <th>Color</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tablaVehiculos">
-          <tr><td colspan="5">Cargando vehículos...</td></tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Propietario</th>
+              <th>Vehículo</th>
+              <th>Placa</th>
+              <th>Color</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaVehiculos">
+            <tr><td colspan="5">Cargando vehículos...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Módulo 5: Creación de Ficha Técnica / Servicio Multiservicio -->
