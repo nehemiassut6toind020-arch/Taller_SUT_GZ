@@ -1,14 +1,11 @@
-// js/auth.js
-
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const alertBox = document.getElementById('alertBox');
   alertBox.style.display = 'none';
 
-  // 1. Iniciar sesión con Supabase Auth usando supabaseClient
+  // 1. Iniciar sesión
   const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: password
@@ -22,7 +19,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
   const userId = authData.user.id;
 
-  // 2. Consultar el rol del usuario en la tabla public.profiles
+  // 2. Consultar rol
   const { data: profile, error: profileError } = await supabaseClient
     .from('profiles')
     .select('rol')
@@ -35,7 +32,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     return;
   }
 
-  // 3. Redireccionar según el rol asignado
+  // 3. Redirección
   if (profile.rol === 'ADMIN') {
     window.location.href = 'admin.html';
   } else {
